@@ -18,6 +18,9 @@ long distances[NUM_SONAR] = {0};
 
 long OBSTACLE_DISTANCE_THRESH = 30;
 
+long MAX_DURATION = 29000;
+long MAX_CM = 450;
+
 int index = 0;
 
 void setup() {
@@ -34,41 +37,44 @@ void loop() {
    index = (index + 1) % NUM_SONAR;
    pingSonar();
 
-   distances[index] = distanceAtAddress(SONAR_RCV_ADDRESSES[index]);
+   long dur = durationAtAddress(SONAR_RCV_ADDRESSES[index]);
+   distances[index] = microsecondsToCentimeters(dur);
 
    int minIndex = minDistanceIndex();
-   // rear right
-   if(index % NUM_SONAR == 0) {
-    if (minIndex == 0) {
+
+   long minDistance = distances[minIndex];
+
+   if (minDistance > 30) {
+     moveForward(0);
+   }
+   else if (minIndex == 0) {
+      moveRight(1.0);
     //Serial.println("rear right");
-     moveForward(0.5);
    } else if (minIndex == 1) {
     //Serial.println("far right");
-     moveLeft();
+     moveRight(0.9);
    } else if (minIndex == 2) {
     //Serial.println("front right");
-     moveLeft();
+     moveRight(0.8);
    } else if (minIndex == 3) {
     //Serial.println("forward");
-     moveForward(0.5);
+     moveForward(0);
    } else if (minIndex == 4) {
     //Serial.println("front left");
-     moveRight();
+     moveLeft(0.8);
    } else if (minIndex == 5) {
     //Serial.println("far left");
-     moveRight();
+     moveLeft(0.9);
    } else if (minIndex == 6) {
     //Serial.println("rear left");
-     moveForward(0.5);
+     moveLeft(1.0);
    
    }
-   //Serial.print(distances[minIndex]);
-   //Serial.println(" cm");
-   }
+
    
 
    //if(index % NUM_SONAR == 0) {
-   delay(50); 
+   delay((MAX_DURATION - dur)/1000 + 29); 
    //}
    
 }
@@ -96,14 +102,15 @@ void pingSonar() {
    digitalWrite(SONAR_BROADCAST, LOW);  
 }
 
-long distanceAtAddress(uint8_t sonarAddress) {
-  return microsecondsToCentimeters(
-    pulseIn(sonarAddress, HIGH)
-  );
+long durationAtAddress(uint8_t sonarAddress) {
+  return pulseIn(sonarAddress, HIGH, MAX_DURATION);
 }
 
 long microsecondsToCentimeters(long microseconds) {
-   return microseconds / 29 / 2;
+  if (microseconds == 0) {
+    return MAX_CM;
+  }
+  return microseconds / 29 / 2;
 }
 
 void moveForward(float forwardIntensity) {
@@ -112,14 +119,14 @@ void moveForward(float forwardIntensity) {
   rightWheelsForward(s);
 }
 
-void moveLeft() {
-  leftWheelsBack(50);
-  rightWheelsForward(25);
+void moveLeft(float intensity) {
+  leftWheelsBack(127 * intensity);
+  rightWheelsForward(127 * intensity);
 }
 
-void moveRight() {
-  leftWheelsForward(25);
-  rightWheelsBack(50);
+void moveRight(float intensity) {
+  leftWheelsForward(127 * intensity);
+  rightWheelsBack(127 * intensity);
 }
 
 
