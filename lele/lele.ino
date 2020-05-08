@@ -12,19 +12,23 @@ void setup()
 void loop()
 {
 
-
-  spinFastALot();
-
-  delay(15000);
-
-
+  turnRight();
   stopRobot();
+  delay(15000);
+  
 }
 
 void stopRobot() {
   leftWheelsBack(0);
   rightWheelsForward(0);
   delay(1000000);
+}
+void turnRight(){
+  int speed = 127;
+  leftWheelsForward(speed);
+ rightWheelsBack(speed);
+ delay(1000);
+  
 }
 
 void  spinFastALot(){
